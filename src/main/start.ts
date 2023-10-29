@@ -5,6 +5,9 @@ import { DoesDoctorExistByIdService } from '@application/services/does-doctor-ex
 
 import { PrismaDoctorGateway } from '@infra/gateways/doctor/prisma-doctor-gateway';
 import { ExpressDoesDoctorExistByIdController } from '@infra/controllers/rest/express-does-doctor-exist-by-id-controller';
+import { ExpressDoesPatientExistByIdController } from '@infra/controllers/rest/express-does-patient-exist-by-id-controller';
+import { DoesPatientExistByIdService } from '@application/services/does-patient-exist-by-id-service';
+import { PrismaPatientGateway } from '@infra/gateways/patient/prisma-patient-gateway';
 
 const start = async () => {
   const app = express();
@@ -18,10 +21,13 @@ const start = async () => {
   // const channel = await connection.createChannel();
 
   const prismaDoctorGateway = new PrismaDoctorGateway(prismaClient);
+  const prismaPatientGateway = new PrismaPatientGateway(prismaClient);
 
   const doesDoctorExistByIdService = new DoesDoctorExistByIdService(prismaDoctorGateway);
+  const doesPatientExistByIdService = new DoesPatientExistByIdService(prismaPatientGateway);
 
   const expressDoesDoctorExistByIdController = new ExpressDoesDoctorExistByIdController(doesDoctorExistByIdService);
+  const expressDoesPatientExistByIdController = new ExpressDoesPatientExistByIdController(doesPatientExistByIdService);
 
   app.use(router);
 
@@ -29,8 +35,12 @@ const start = async () => {
     return expressDoesDoctorExistByIdController.handle(request, response);
   });
 
-  app.listen(3000, () => {
-    console.log(`Listening on port ${3000}`);
+  router.get('/patients/:id/exists', (request: Request, response: Response) => {
+    return expressDoesPatientExistByIdController.handle(request, response);
+  });
+
+  app.listen(process.env.API_BASE_PORT, () => {
+    console.log(`Listening on port ${process.env.API_BASE_PORT}`);
   });
 };
 
